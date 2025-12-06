@@ -120,4 +120,3 @@ function deleteProduct(id){
   renderAdminProducts();
   loadProducts();
 }
-
