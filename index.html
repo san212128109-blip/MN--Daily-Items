@@ -7,6 +7,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- Header / Navbar -->
+  <header class="navbar">
+    <h1 class="company-name">MN Daily Item</h1>
+  </header>
+
   <!-- Role Selection -->
   <div id="role-selection" class="page">
     <h1>Welcome! আপনার রোল নির্বাচন করুন</h1>
@@ -19,7 +25,7 @@
 
   <!-- Admin Login -->
   <div id="admin-login" class="page hidden">
-    <h1>Admin Login</h1>
+    <h1>Admin Login - <span class="company-name">MN Daily Item</span></h1>
     <form id="adminForm">
       <input type="text" id="adminUser" placeholder="User ID" required>
       <input type="password" id="adminPass" placeholder="Password" required>
@@ -30,7 +36,7 @@
 
   <!-- Admin Dashboard -->
   <div id="admin-dashboard" class="page hidden">
-    <h1>Admin Dashboard</h1>
+    <h1>Admin Dashboard - <span class="company-name">MN Daily Item</span></h1>
     <p>Products and Offers Manage করুন</p>
     <div id="admin-products"></div>
     <h3>Add New Product</h3>
@@ -44,7 +50,7 @@
   <!-- Customer Home Page -->
   <div id="home-page" class="page hidden">
     <section class="hero-banner">
-      <h1>Welcome to MN Daily Item</h1>
+      <h1>Welcome to <span class="company-name">MN Daily Item</span></h1>
       <p>Fresh & Daily Essentials Delivered to Your Doorstep!</p>
       <button onclick="alert('Shop Now clicked')">Shop Now</button>
     </section>
@@ -77,6 +83,11 @@
       <p>Upto 30% off on selected items!</p>
     </section>
   </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 <span class="company-name">MN Daily Item</span>. All rights reserved.</p>
+  </footer>
 
 <script src="script.js"></script>
 </body>
