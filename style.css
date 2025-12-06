@@ -19,10 +19,11 @@ button { cursor: pointer; }
 .error { color: red; font-weight: bold; }
 
 /* Hero Banner */
-.hero-banner { background: url("https://via.placeholder.com/1200x400") center/cover no-repeat; width:100%; padding:60px 20px; color:white; }
+.hero-banner { background-color: #e0f7fa; width:100%; padding:100px 20px; text-align:center; color:#333; position:relative;}
 .hero-banner h1 { font-size:2.5rem; }
 .hero-banner button { padding:12px 25px; border:none; border-radius:5px; background:#4CAF50; color:white; }
 .hero-banner button:hover { background:#388E3C; }
+#hero-admin-content { margin-top:20px; }
 
 /* Categories */
 .categories { padding:30px 20px; }
@@ -55,4 +56,3 @@ button { cursor: pointer; }
 
 /* Footer */
 footer { padding:15px; background:#333; color:white; text-align:center; }
-
