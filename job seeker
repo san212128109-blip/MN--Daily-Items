@@ -1,0 +1,12 @@
+import React from "react";
+
+function JobSeekerDashboard() {
+  return (
+    <div>
+      <h1>Welcome, Job Seeker!</h1>
+      <p>এখানে Job Seeker এর জন্য ড্যাশবোর্ড থাকবে।</p>
+    </div>
+  );
+}
+
+export default JobSeekerDashboard;
