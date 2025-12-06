@@ -1,281 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MN Daily Items</title>
-<style>
-/* Reset & body */
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:sans-serif;background:#f5f5f5;}
+'use client';
+import React, { useState, useEffect } from 'react';
 
-/* Header */
-header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#ff3f6c;color:white;flex-wrap:wrap;position:sticky;top:0;z-index:100;}
-header .logo{font-size:22px;font-weight:bold;}
-header input{padding:5px 10px;width:200px;border-radius:4px;border:none;}
-header button{margin-left:5px;padding:5px 10px;border:none;border-radius:4px;background:#fff;color:#ff3f6c;font-weight:bold;cursor:pointer;}
+// ==== MOCK DATABASE ====
+let MOCK_PRODUCTS = [
+  { id: 1, title: 'Redmi Note 12', price: 18999, category: 'Phones', image: 'https://via.placeholder.com/400x300?text=Phone', stock: 10 },
+  { id: 2, title: 'Sony Headphones', price: 2499, category: 'Audio', image: 'https://via.placeholder.com/400x300?text=Headphones', stock: 20 },
+  { id: 3, title: 'Nike Shoes', price: 4599, category: 'Fashion', image: 'https://via.placeholder.com/400x300?text=Shoes', stock: 5 },
+  { id: 4, title: 'Laptop Backpack', price: 1299, category: 'Bags', image: 'https://via.placeholder.com/400x300?text=Backpack', stock: 15 },
+  { id: 5, title: 'Smart Watch', price: 3999, category: 'Wearables', image: 'https://via.placeholder.com/400x300?text=Watch', stock: 12 },
+];
 
-/* Slider */
-.hero-slider{width:100%;height:300px;overflow:hidden;position:relative;margin-top:10px;}
-.hero-slider img{width:100%;height:300px;object-fit:cover;transition:opacity 0.5s;}
+// ==== MAIN COMPONENT ====
+export default function DarazCloneMini() {
+  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [cart, setCart] = useState({});
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('All');
+  const [selected, setSelected] = useState(null);
 
-/* Categories */
-.categories{padding:20px;}
-.categories h2{margin-bottom:10px;}
-.category-cards{display:flex;overflow-x:auto;gap:10px;}
-.category-card{min-width:120px;background:#fff;padding:10px;text-align:center;box-shadow:0 2px 5px rgba(0,0,0,0.1);border-radius:5px;cursor:pointer;flex-shrink:0;}
-.category-card img{width:80px;height:80px;object-fit:cover;margin-bottom:5px;border-radius:5px;}
+  const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
 
-/* Products */
-.products{padding:20px;}
-.products h2{margin-bottom:10px;}
-#productsList{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px;}
-.productCard{background:#fff;padding:10px;text-align:center;border-radius:5px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-.productCard img{width:100%;height:120px;object-fit:cover;margin-bottom:5px;}
-.productCard button{margin-top:5px;padding:5px 10px;border:none;border-radius:4px;background:#ff3f6c;color:white;font-weight:bold;cursor:pointer;}
+  // FILTERED PRODUCTS
+  const filtered = products.filter(p => 
+    (category === 'All' || p.category === category) &&
+    p.title.toLowerCase().includes(query.toLowerCase())
+  );
 
-/* Checkout */
-#checkoutSection{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:1000;}
-#checkoutSection .checkout-content{background:#fff;padding:20px;border-radius:8px;width:300px;text-align:center;}
+  // CART FUNCTIONS
+  const addToCart = (product) => {
+    setCart(prev => {
+      const copy = {...prev};
+      if (!copy[product.id]) copy[product.id] = {...product, qty: 0};
+      if(copy[product.id].qty < product.stock) copy[product.id].qty += 1;
+      return copy;
+    });
+  };
 
-/* Modals */
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:1000;}
-.modal-content{background:#fff;padding:20px;border-radius:8px;width:300px;position:relative;text-align:center;}
-.close{position:absolute;top:10px;right:10px;cursor:pointer;font-size:18px;font-weight:bold;}
+  const removeFromCart = (id) => {
+    setCart(prev => {
+      const copy = {...prev};
+      delete copy[id];
+      return copy;
+    });
+  };
 
-/* Admin Panel */
-#adminPanel{display:none;padding:20px;background:#fff;margin:20px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.2);}
-#adminProducts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  const updateQty = (id, qty) => {
+    setCart(prev => {
+      const copy = {...prev};
+      if (qty <= 0) delete copy[id];
+      else if(qty <= copy[id].stock) copy[id].qty = qty;
+      return copy;
+    });
+  };
 
-/* Scrollbar for categories */
-.category-cards::-webkit-scrollbar{height:6px;}
-.category-cards::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px;}
-@media(max-width:768px){
-  header{flex-direction:column;align-items:flex-start;}
-  #productsList, #adminProducts{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+  const cartItems = Object.values(cart);
+  const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4">Daraz Mini Clone</h1>
+
+      {/* SEARCH + CATEGORY */}
+      <div className="flex gap-4 mb-6">
+        <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search..." className="border p-2 rounded flex-1"/>
+        <select value={category} onChange={e=>setCategory(e.target.value)} className="border p-2 rounded">
+          {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+        </select>
+      </div>
+
+      {/* PRODUCTS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {filtered.map(p => (
+          <div key={p.id} className="border rounded p-3 flex flex-col">
+            <img src={p.image} alt={p.title} className="w-full h-48 object-cover rounded mb-2"/>
+            <h2 className="font-semibold">{p.title}</h2>
+            <p className="text-sm text-gray-500">{p.category}</p>
+            <p className="font-bold">৳ {p.price}</p>
+            <button onClick={()=>addToCart(p)} className="mt-auto bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Add to Cart</button>
+          </div>
+        ))}
+      </div>
+
+      {/* CART */}
+      <div className="fixed bottom-4 right-4 w-80 bg-white border rounded p-4 shadow-lg">
+        <h2 className="font-bold mb-2">Cart ({cartItems.length})</h2>
+        {cartItems.length === 0 && <p className="text-sm text-gray-500">Cart is empty</p>}
+        {cartItems.map(item => (
+          <div key={item.id} className="flex items-center justify-between mb-2">
+            <div>
+              <p className="font-medium">{item.title}</p>
+              <p className="text-sm">৳ {item.price} × {item.qty}</p>
+              <div className="flex gap-1 mt-1">
+                <button onClick={()=>updateQty(item.id, item.qty-1)} className="border px-2 rounded">-</button>
+                <span className="px-2">{item.qty}</span>
+                <button onClick={()=>updateQty(item.id, item.qty+1)} className="border px-2 rounded">+</button>
+              </div>
+            </div>
+            <button onClick={()=>removeFromCart(item.id)} className="text-red-500 font-bold">X</button>
+          </div>
+        ))}
+        {cartItems.length > 0 && <p className="font-bold mt-2">Total: ৳ {cartTotal}</p>}
+      </div>
+    </div>
+  );
 }
-</style>
-</head>
-<body>
-
-<header>
-  <div class="logo">MN Daily Items</div>
-  <input type="text" id="searchInput" placeholder="Search products...">
-  <div>
-    <button id="customerLoginBtnHeader">Customer Login</button>
-    <button id="adminLoginBtnHeader">Admin Login</button>
-  </div>
-</header>
-
-<div class="hero-slider">
-  <img id="sliderImg" src="https://via.placeholder.com/1200x300?text=MN+Daily+Items+Banner+1" alt="Banner">
-</div>
-
-<section class="categories">
-  <h2>Categories</h2>
-  <div class="category-cards" id="categoryCards"></div>
-</section>
-
-<section class="products" id="customerPage" style="display:none;">
-  <h2>Featured Products</h2>
-  <div id="productsList"></div>
-</section>
-
-<div id="checkoutSection">
-  <div class="checkout-content">
-    <h3>Checkout</h3>
-    <p>Payment Number: <span id="paymentNumber"></span></p>
-    <p>Method: bKash / Nagad</p>
-    <button onclick="closeCheckout()">Close</button>
-  </div>
-</div>
-
-<!-- Customer Login Modal -->
-<div id="customerLoginModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeCustomerModal">&times;</span>
-    <h3>Customer Login</h3>
-    <input type="text" id="customerPhone" placeholder="Enter phone number">
-    <button id="loginCustomerBtn">Login</button>
-  </div>
-</div>
-
-<!-- Admin Login Modal -->
-<div id="adminLoginModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeAdminModal">&times;</span>
-    <h3>Admin Login</h3>
-    <input type="text" id="adminUser" placeholder="Username">
-    <input type="password" id="adminPass" placeholder="Password">
-    <button id="adminLoginBtn">Login</button>
-  </div>
-</div>
-
-<!-- Admin Panel -->
-<div id="adminPanel">
-  <h2>Store Admin</h2>
-  <h3>Payment Number</h3>
-  <input type="text" id="adminPayment" placeholder="Enter bKash/Nagad Number">
-  <button id="savePayment">Save</button>
-
-  <h3>Add Product</h3>
-  <input type="text" id="prodName" placeholder="Product Name">
-  <input type="number" id="prodPrice" placeholder="Price">
-  <input type="text" id="prodImage" placeholder="Image URL">
-  <select id="prodCategory">
-    <option value="Staples">Staples</option>
-    <option value="Oils & Spices">Oils & Spices</option>
-    <option value="Beverages">Beverages</option>
-    <option value="Snacks">Snacks</option>
-    <option value="Household">Household</option>
-  </select>
-  <button id="addProductBtn">Add Product</button>
-
-  <h3>All Products</h3>
-  <div id="adminProducts"></div>
-</div>
-
-<script>
-// Slider
-let sliderImages=["https://via.placeholder.com/1200x300?text=MN+Daily+Items+Banner+1","https://via.placeholder.com/1200x300?text=MN+Daily+Items+Banner+2","https://via.placeholder.com/1200x300?text=MN+Daily+Items+Banner+3"];
-let sliderIndex=0;
-setInterval(()=>{
-  const img=document.getElementById('sliderImg');
-  img.style.opacity=0;
-  setTimeout(()=>{img.src=sliderImages[sliderIndex];img.style.opacity=1;sliderIndex=(sliderIndex+1)%sliderImages.length;},200);
-},3000);
-
-// Categories
-const categories=[{name:"Staples",img:"https://via.placeholder.com/80?text=Staples"},{name:"Oils & Spices",img:"https://via.placeholder.com/80?text=Oils"},{name:"Beverages",img:"https://via.placeholder.com/80?text=Beverages"},{name:"Snacks",img:"https://via.placeholder.com/80?text=Snacks"},{name:"Household",img:"https://via.placeholder.com/80?text=Household"}];
-const categoryCardsDiv=document.getElementById('categoryCards');
-categories.forEach(cat=>{
-  const div=document.createElement('div');
-  div.className='category-card';
-  div.innerHTML=`<img src="${cat.img}"><br>${cat.name}`;
-  div.onclick=()=>loadProducts(cat.name);
-  categoryCardsDiv.appendChild(div);
-});
-
-// Products
-let products=JSON.parse(localStorage.getItem('products'))||[];
-
-// Customer Login
-const customerLoginBtnHeader=document.getElementById('customerLoginBtnHeader');
-const customerModal=document.getElementById('customerLoginModal');
-const closeCustomerModal=document.getElementById('closeCustomerModal');
-const loginCustomerBtn=document.getElementById('loginCustomerBtn');
-const customerPhoneInput=document.getElementById('customerPhone');
-
-customerLoginBtnHeader.onclick=()=>{customerModal.style.display='flex';document.body.style.overflow='hidden';}
-closeCustomerModal.onclick=()=>{customerModal.style.display='none';document.body.style.overflow='auto';}
-loginCustomerBtn.onclick=()=>{
-  const phone=customerPhoneInput.value.trim();
-  if(phone){
-    localStorage.setItem('customerPhone',phone);
-    customerLoginBtnHeader.style.display='none';
-    customerModal.style.display='none';
-    document.body.style.overflow='auto';
-    loadCustomerPage();
-  }else alert("Enter phone number");
-}
-if(localStorage.getItem('customerPhone')) customerLoginBtnHeader.style.display='none';
-
-// Admin Login
-const adminLoginBtnHeader=document.getElementById('adminLoginBtnHeader');
-const adminModal=document.getElementById('adminLoginModal');
-const closeAdminModal=document.getElementById('closeAdminModal');
-const adminLoginBtn=document.getElementById('adminLoginBtn');
-
-adminLoginBtnHeader.onclick=()=>{adminModal.style.display='flex';document.body.style.overflow='hidden';}
-closeAdminModal.onclick=()=>{adminModal.style.display='none';document.body.style.overflow='auto';}
-adminLoginBtn.onclick=()=>{
-  const username=document.getElementById('adminUser').value;
-  const password=document.getElementById('adminPass').value;
-  if(username==="Daily"&&password==="nafis128!@*"){
-    adminModal.style.display='none';
-    document.body.style.overflow='auto';
-    adminLoginBtnHeader.style.display='none';
-    document.getElementById('adminPanel').style.display='block';
-    loadAdminProducts();
-  }else alert("Wrong credentials");
-}
-
-// Load products
-function loadProducts(filterCategory){
-  document.getElementById('customerPage').style.display='block';
-  const list=document.getElementById('productsList'); list.innerHTML='';
-  let filtered=products;
-  if(filterCategory) filtered=products.filter(p=>p.category===filterCategory);
-  filtered.forEach(p=>{
-    list.innerHTML+=`<div class="productCard">
-      <img src="${p.image||'https://via.placeholder.com/100'}"><br>
-      <b>${p.name}</b><br>৳${p.price}<br>Category: ${p.category}<br>
-      <button onclick="buyNow('${p.name}','${p.price}')">Buy Now</button>
-    </div>`;
-  });
-}
-
-// Search
-document.getElementById('searchInput').addEventListener('input',function(){
-  const val=this.value.toLowerCase();
-  const filtered=products.filter(p=>p.name.toLowerCase().includes(val)||p.category.toLowerCase().includes(val));
-  loadProducts();
-});
-
-// Buy Now
-function buyNow(name,price){
-  const checkout=document.getElementById('checkoutSection');
-  checkout.style.display='flex';
-  document.getElementById('paymentNumber').innerText=localStorage.getItem('paymentNumber')||'Not set';
-}
-window.buyNow=buyNow;
-function closeCheckout(){document.getElementById('checkoutSection').style.display='none';}
-
-// Admin panel
-const savePayment=document.getElementById('savePayment');
-const adminPayment=document.getElementById('adminPayment');
-const addProductBtn=document.getElementById('addProductBtn');
-const adminProducts=document.getElementById('adminProducts');
-
-savePayment.onclick=()=>{
-  const val=adminPayment.value.trim();
-  if(val){localStorage.setItem('paymentNumber',val);alert("Saved!");}else alert("Enter number"); 
-}
-
-addProductBtn.onclick=()=>{
-  const name=document.getElementById('prodName').value;
-  const price=document.getElementById('prodPrice').value;
-  const image=document.getElementById('prodImage').value.trim();
-  const category=document.getElementById('prodCategory').value;
-  if(name&&price&&category){
-    products.push({name,price,image:image||'https://via.placeholder.com/100',category});
-    localStorage.setItem('products',JSON.stringify(products));
-    loadAdminProducts();
-    loadProducts();
-  }else alert("Fill all fields");
-}
-
-function loadAdminProducts(){
-  adminProducts.innerHTML='';
-  products.forEach((p,i)=>{
-    adminProducts.innerHTML+=`<div class="productCard">
-      <img src="${p.image||'https://via.placeholder.com/100'}"><br>
-      <b>${p.name}</b><br>৳${p.price}<br>Category: ${p.category}<br>
-      <button onclick="deleteProduct(${i})">Delete</button>
-    </div>`;
-  });
-}
-
-function deleteProduct(i){
-  products.splice(i,1);
-  localStorage.setItem('products',JSON.stringify(products));
-  loadAdminProducts();
-  loadProducts();
-}
-window.deleteProduct=deleteProduct;
-
-// Load products on page load
-loadProducts();
-</script>
-</body>
-</html>
