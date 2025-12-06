@@ -1,0 +1,9 @@
+.admin-login-page {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  height: 100vh; background: linear-gradient(135deg, #ff5722, #ff9800); color: white; text-align: center;
+}
+.admin-login-page form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+.admin-login-page input { padding: 12px; border-radius: 8px; border: none; font-size: 16px; }
+.admin-login-page button { padding: 12px; border: none; border-radius: 8px; background-color: white; color: #ff5722; font-weight: bold; }
+.admin-login-page button:hover { transform: scale(1.05); }
+.admin-login-page .error { color: yellow; font-weight: bold; }
