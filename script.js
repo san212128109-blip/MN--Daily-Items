@@ -104,19 +104,29 @@ function renderAdminProducts(){
   });
 }
 
-function addProduct(){
-  const name=document.getElementById('newName').value;
-  const price=Number(document.getElementById('newPrice').value);
-  const img=document.getElementById('newImg').value;
-  if(!name || !price || !img){alert('Fill all fields'); return;}
-  const id=products.length?products[products.length-1].id+1:1;
-  products.push({id,name,price,img});
-  renderAdminProducts();
-  loadProducts();
-}
+// Add Product or Hero Content
+function addContent() {
+  const name = document.getElementById('newName').value;
+  const price = Number(document.getElementById('newPrice').value);
+  const img = document.getElementById('newImg').value;
+  const type = document.getElementById('contentType').value;
 
-function deleteProduct(id){
-  products=products.filter(p=>p.id!==id);
-  renderAdminProducts();
-  loadProducts();
+  if (!name || !img) { alert('Fill all fields'); return; }
+
+  if(type==='product'){
+    const id = products.length ? products[products.length-1].id + 1 : 1;
+    products.push({id,name,price,img});
+    renderAdminProducts();
+    loadProducts();
+  } else if(type==='hero'){
+    const heroSection = document.getElementById('hero-admin-content');
+    const div = document.createElement('div');
+    div.innerHTML = `<h2>${name}</h2><img src="${img}" alt="${name}" style="max-width:200px;">`;
+    heroSection.appendChild(div);
+  }
+
+  // Clear input fields
+  document.getElementById('newName').value = '';
+  document.getElementById('newPrice').value = '';
+  document.getElementById('newImg').value = '';
 }
